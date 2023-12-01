@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Home Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            
+            background-color: #f5f5f5;
+            background-image: url("https://cdn.dribbble.com/users/4781516/screenshots/10796279/6e3f47bf33153bd352d684a4d0ddea12.gif");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+
+        }
+        button {
+            padding: 10px 20px;
+            margin-left: 600px;
+            background-color: purple;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            
+        }
+
+        button:hover {
+            background-color: rgb(198, 42, 198);
+        }
+        h2{
+            color:black;
+            margin-top:100px;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+    <h2 >Welcome to the Home Page!</h2>
+    <br><br>
+    <!-- Login Button -->
+    <form action="{{ url_for('login') }}" method="post">
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

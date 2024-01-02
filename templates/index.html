@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to the Q&A Forum</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('https://mergersandinquisitions.com/wp-content/uploads/2019/10/cat-grid-repe.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #ffffff27;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #f6ff00;
+            text-align: center;
+        }
+
+        h3 {
+            color: #fff200;
+            text-align: center;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        a {
+            text-decoration: none;
+            color: whitesmoke;
+            margin-right: 30px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 10px;
+            text-decoration: none;
+            color: #fff;
+            
+            border-radius: 3px;
+            margin-top: 15px;
+        }
+
+        
+
+        .btn.ask-question {
+            background-color: purple;
+        }
+
+        /* Style for the "Logout" button */
+        .btn.logout {
+            background-color: red;
+        }
+
+        .btn.ask-question:hover {
+            background-color: rgb(208, 35, 208);
+        }
+
+        .btn.logout:hover {
+            background-color: rgb(207, 35, 35);
+        }
+
+
+        .question img {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            cursor: pointer; /* Add pointer cursor to indicate it's clickable */
+        }
+        body {
+    padding-top: 100px; /* Adjust the padding-top value to provide space for the fixed navigation bar */
+}
+
+        nav {
+    background-color: rgba(220, 220, 220, 0.511);
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    
+    z-index: 1000; /* Set a higher z-index to ensure it appears above other elements */
+}
+
+        /* Style for the right-aligned buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .small-image {
+    max-width: 300px !important; /* Set the maximum width of the images */
+    max-height: 300px !important; /* Set the maximum height of the images */
+    margin-right: 10px !important; /* Add some margin between images */
+    margin-bottom: 10px !important; /* Add some margin at the bottom of each image */
+}
+    </style>
+</head>
+<body>
+    <nav>
+        <div><h3>PF Forum</h3></div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('ask_question') }}" style="text-decoration: none; color: white;" class="btn ask-question">Ask Question</a>
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; color: white;" class="btn logout">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Welcome, {{ user.username }}!</h2>
+
+        <h3>Questions</h3>
+        <ul>
+            {% for question in questions %}
+            <div class="question">
+                <li>
+                    <strong>Title:{{ question.title }}</strong> <br>Description- {{ question.content }}
+                     - {{ question.user.username }}<br><br><br>
+                     {% if question.image_data %}
+                     {% for image_data in question.image_data %}
+                         <img class="small-image" src="data:image/jpeg;base64,{{ image_data }}" alt="Question Image" onclick="toggleFullscreen(this)">
+                     {% endfor %}
+                 {% endif %}
+                </div>
+                    <a href="{{ url_for('question_detail', question_id=question.id) }}">View Answers</a>
+                    {% if user.id != question.user_id %}
+    <a href="{{ url_for('answer_question', question_id=question.id) }}" class="btn btn-primary">Answer this Question</a>
+{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        
+    </div>
+    <script>
+        function toggleFullscreen(element) {
+            if (!document.fullscreenElement) {
+                element.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>

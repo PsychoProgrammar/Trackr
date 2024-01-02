@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Detail</title>
+    <link rel="stylesheet" href="path/to/button-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+   
+
+
+     <!-- Include jQuery library -->
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+ <!-- Include emojionearea library via CDN -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.css" integrity="sha512-vEia6TQGr3FqC6h55/NdU3QSM5XR6HSl5fW71QTKrgeER98LIMGwymBVM867C1XHIkYD9nMTfWK2A0xcodKHNA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js" integrity="sha512-hkvXFLlESjeYENO4CNi69z3A1puvONQV5Uh+G4TUDayZxSLyic5Kba9hhuiNLbHqdnKNMk2PxXKm0v7KDnWkYA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://www.landisgyr.com/webfoo/wp-content/uploads/2017/11/landis-gyr-business-consulting-services.png');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    background-color: rgba(255, 255, 255, 0.559);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    
+}
+
+body {
+    padding-top: 100px; /* Adjust the padding-top value to provide space for the fixed navigation bar */
+}
+
+h2 {
+            color: #f6ff00;
+            
+        }
+
+        h3 {
+            color: #fff200;
+            
+        }
+
+p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    border: 1px solid #ddd;
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #fff;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #007bff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.question img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+
+
+.answer-container {
+    list-style: none;
+    padding: 0;
+    position: relative;
+}
+
+.answer-container li {
+    border: 1px solid #ddd;
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.answer-container p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.answer-container p strong {
+    margin-right: 5px;
+}
+
+.toggle-reply-form {
+    display: inline-block;
+    padding: 0px 0px;
+    text-decoration: none;
+    color: #000;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+}
+
+.toggle-reply-form::before {
+    content: '\2190';
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+.toggle-reply-form:hover::after {
+    content: ' Reply';
+    position: absolute;
+    left: 100%;
+    top: 0;
+    padding-left: 5px;
+    background-color: #fff;
+    border-radius: 3px;
+    color: #000;
+}
+
+.reply {
+    
+    margin-left: 30px;
+}
+
+.replies-container {
+    margin-left: 20px; 
+   
+    border-bottom: 1px solid #ccc;
+}
+
+/* Remove border from the last reply */
+.replies-container:last-child {
+    border-bottom: none;
+}
+
+.toggle-reply-form span {
+    font-weight: bold; /* Make the "Reply" text bold */
+}
+
+.small-image {
+    max-width: 300px !important; /* Set the maximum width of the images */
+    max-height: 300px !important; /* Set the maximum height of the images */
+    margin-right: 10px !important; /* Add some margin between images */
+    margin-bottom: 10px !important; /* Add some margin at the bottom of each image */
+}
+
+nav {
+    background-color: rgba(220, 220, 220, 0.511);
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    
+    z-index: 1000; /* Set a higher z-index to ensure it appears above other elements */
+}
+
+        /* Style for the right-aligned buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+             
+        }
+.btn {
+            display: inline-block;
+            padding: 10px 10px;
+            text-decoration: none;
+            color: #fff;
+            
+            border-radius: 3px;
+            margin-top: 15px;
+        }
+
+        
+
+        .btn.ask-question {
+            background-color: purple;
+        }
+
+        /* Style for the "Logout" button */
+        .btn.logout {
+            background-color: red;
+        }
+
+        .btn.ask-question:hover {
+            background-color: rgb(208, 35, 208);
+        }
+
+        .btn.logout:hover {
+            background-color: rgb(207, 35, 35);
+        }
+        a {
+           
+            
+            margin-right: 30px;
+        }
+
+       
+    </style>
+</head>
+<body>
+    <nav>
+        <div><h3>PF Forum</h3></div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('ask_question') }}" style="text-decoration: none; color: white;" class="btn ask-question">Ask Question</a>
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; color: white;" class="btn logout">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="question">
+        <h2>Question: {{ question.title }}</h2>
+        <p><b>Description: {{ question.content }} - {{ question.user.username }}</b></p>
+        
+        {% if question.image_data %}
+                     {% for image_data in question.image_data %}
+                         <img class="small-image" src="data:image/jpeg;base64,{{ image_data }}" alt="Question Image" onclick="toggleFullscreen(this)">
+                     {% endfor %}
+                 {% endif %}</div>
+        <h3>Answers</h3>
+        <p>Number of Answers: {{ num_answers }}</p>
+        <ul>
+            <div class="answer-container">
+            {% for answer in question.answers %}
+                <li>
+                    {% if answer.edited %}
+                    
+                        <p><strong>Edited Answer:</strong></p>
+                        
+                        <p>{{ answer.content }} - {{ answer.user.username }}</p>
+                        
+                        Edited: {{ answer.edited_at_local.strftime('%d-%m-%Y %H:%M') }}
+                    <br>
+                    {% else %}
+                        
+                        <p>@{{ answer.user.username }}:{{ answer.content }}</p>
+                        
+                    {% endif %}
+                    {% if answer.user.username == user.username %}
+                        <a href="{{ url_for('edit_answer', answer_id=answer.id) }}" >Edit</a>
+                    {% endif %}
+                    <div class="right-bottom-arrow toggle-reply-form" data-answer-id="{{ answer.id }}">
+                        <span> Reply</span>
+                    </div>
+
+                    {% if answer.replies %}
+                    <div class="reply">
+                        <br><strong>Replies:</strong><br>
+                        <!-- Add a class to the replies container for easy selection -->
+                        {% for reply in answer.replies %}
+                        <div class="replies-container">
+                            
+                                <p>{{ reply.content }} - {{ reply.user.username }}</p>
+                                <!-- Add any other reply details you want to display -->
+                            </div>
+                                {% endfor %}
+                        
+                    </div>
+                    {% endif %}
+                    <!-- Add a div to contain the reply form, initially hidden -->
+<div class="reply-form-container" style="display:none;" id="reply-form-container-{{ answer.id }}">
+    <form method="POST" action="{{ url_for('question_detail', question_id=question.id) }}" class="reply-form">
+        <input type="hidden" name="answer_id" value="{{ answer.id }}">
+        {{ reply_form.hidden_tag() }}
+        {{ reply_form.content.label() }}
+        {{ reply_form.content(id="myText-" ~ answer.id, class="form-control") }}
+        <input type="hidden" name="answer_id" value="{{ answer.id }}">
+        <br>
+        <button type="submit" class="btn btn-primary">Submit Reply</button>
+    </form>
+</div>
+
+
+                </li>
+                 <!-- Arrow for the rightmost bottom -->
+        
+            {% endfor %}
+            </div>
+        </ul>
+            
+            
+            
+
+        {% if user.id != question.user_id %}
+    <a href="{{ url_for('answer_question', question_id=question.id) }}" class="btn btn-primary">Answer this Question</a>
+{% endif %}
+
+        
+        <a href="{{ url_for('index', username=user.username) }}" class="btn btn-secondary">Back to Index</a>
+    
+    </div>
+    <!-- Updated JavaScript -->
+<script>
+    // Wait for the DOM to be ready
+document.addEventListener("DOMContentLoaded", function () {
+    // Use JavaScript to handle the toggle functionality for reply forms
+    document.querySelectorAll('.toggle-reply-form').forEach(button => {
+        button.addEventListener('click', function () {
+            // Get the associated answer ID from the data attribute
+            var answerId = this.dataset.answerId;
+
+            // Toggle the visibility of the corresponding form container
+            var formContainer = document.getElementById('reply-form-container-' + answerId);
+            if (formContainer) {
+                formContainer.style.display = (formContainer.style.display === 'none') ? 'block' : 'none';
+
+                // If the form is now visible and hasn't been initialized yet, initialize EmojiOneArea for the textarea inside it
+                if (formContainer.style.display === 'block' && !formContainer.dataset.emojioneAreaInitialized) {
+                    const textarea = formContainer.querySelector('#myText-' + answerId);
+                    if (textarea) {
+                        $(textarea).emojioneArea({
+                            pickerPosition: 'bottom'
+                        });
+                        // Mark the form as initialized to avoid reinitialization
+                        formContainer.dataset.emojioneAreaInitialized = true;
+                    }
+                }
+            }
+        });
+    });
+});
+
+
+function toggleFullscreen(element) {
+            if (!document.fullscreenElement) {
+                element.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+</script>
+   
+    
+</body>
+</html>

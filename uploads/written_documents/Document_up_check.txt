@@ -1,0 +1,7 @@
+Title: Document_up_check
+
+Brief Description: checking if txt gets uploaded
+
+Content:
+Hi,
+and welcome to the type and upload the text file corner.

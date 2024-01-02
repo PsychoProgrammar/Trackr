@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Document</title>
+    <style>
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('https://web-static.wrike.com/blog/content/uploads/2022/03/iStock-904268154-e1646654233106.jpg?av=d2d3e2c60680fbaaf2fba9500e0b3e49');
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .radio-options {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .sections-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #writeSection,
+        #uploadSection {
+            width: 48%; /* Adjust as needed */
+        }
+
+        input[type="text"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #1c866d;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #20574a;
+        }
+
+        .disabled-section {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .dashboard {
+            align-self: stretch;
+            background: rgba(220, 220, 220, 0.813);
+            color: #fff;
+            display: flex;
+            justify-content: right;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .goback {
+            background: linear-gradient(to top, #092631, #12475c);
+            color: #fff;
+        }
+
+        .logout {
+            background: linear-gradient(to top, #692018, #c0392b);
+            color: #fff;
+        }
+
+        button {
+            flex-basis: 100%;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .dashboard_buttons {
+            order: 1;
+            justify-content: space-between;
+        }
+
+
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard">
+        <div class="dashboard_buttons">
+            <button class="button goback" onclick="redirectToPage('/dashboard')">Main Page</button>
+            <button class="button logout" onclick="handleButtonClick('Logout')">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <form action="/process_document" method="post" enctype="multipart/form-data">
+            <h1>Add Document</h1>
+            <div class="radio-options">
+                <label>
+                    <input type="radio" id="write_option" name="option" value="write" checked>
+                    Write a document description:
+                </label>
+
+                <label>
+                    <input type="radio" id="upload_option" name="option" value="upload">
+                    Upload a file:
+                </label>
+            </div>
+
+            <div class="sections-container">
+                <div id="writeSection">
+                    <label for="doc_title">Document Title:</label>
+                    <input type="text" id="doc_title" name="doc_title" placeholder="Enter document title" required>
+
+                    <label for="brief_description">Brief Document Description:</label>
+                    <input type="text" id="brief_description" name="brief_description" placeholder="Enter brief description" required>
+
+                    <label for="content">Main Document Description:</label>
+                    <textarea id="content" name="content" placeholder="Write your main document description..." required></textarea>
+                </div>
+
+                <div id="uploadSection" class="disabled-section">
+                    <label for="file_title">File Title:</label>
+                    <input type="text" id="file_title" name="file_title" placeholder="Enter file title" required>
+
+                    <label for="brief_file_description">Brief File Description:</label>
+                    <input type="text" id="brief_file_description" name="brief_file_description" placeholder="Enter brief description" required>
+
+                    <label for="file">Upload a File:</label>
+                    <input type="file" name="file" accept=".txt,.docx,.pdf">
+                </div>
+            </div>
+
+            <input type="submit" value="Save Document">
+        </form>
+    </div>
+
+    <script>
+        // Toggle the display of writeSection and uploadSection based on the selected option
+        document.addEventListener('DOMContentLoaded', function () {
+            const writeOption = document.getElementById('write_option');
+            const uploadOption = document.getElementById('upload_option');
+            const writeSection = document.getElementById('writeSection');
+            const uploadSection = document.getElementById('uploadSection');
+            const fileTitleInput = document.getElementById('file_title');
+            const docTitleInput = document.getElementById('doc_title');
+            const briefDescription = document.getElementById('brief_description');
+            const content = document.getElementById('content');
+            const briefFileDescription = document.getElementById('brief_file_description');
+    
+            // Initial setup
+            fileTitleInput.removeAttribute('required');
+            docTitleInput.setAttribute('required', 'required');
+            briefFileDescription.removeAttribute('required');
+    
+            writeOption.addEventListener('change', function () {
+                writeSection.classList.remove('disabled-section');
+                uploadSection.classList.add('disabled-section');
+                fileTitleInput.removeAttribute('required');
+                docTitleInput.setAttribute('required', 'required');
+                briefFileDescription.removeAttribute('required');
+            });
+    
+            uploadOption.addEventListener('change', function () {
+                writeSection.classList.add('disabled-section');
+                uploadSection.classList.remove('disabled-section');
+                fileTitleInput.setAttribute('required', 'required');
+                docTitleInput.removeAttribute('required');
+                briefDescription.removeAttribute('required');
+                content.removeAttribute('required');
+                briefFileDescription.setAttribute('required', 'required');
+            });
+        });
+
+        function redirectToPage(url) {
+            window.location.href = url;
+        }
+
+        var username = '{{ session["username"] }}';
+        console.log('Username:', username);
+
+        function handleButtonClick(message) {
+            if (message == "Logout"){
+                alert(message);
+                window.location.href = '/logout';
+            }
+        }
+        
+    </script>
+    
+    
+    
+
+</body>
+
+</html>

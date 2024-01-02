@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-size: cover;
+            background-position: center; 
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('https://media.licdn.com/dms/image/C4E12AQF3CPOmqC08Nw/article-cover_image-shrink_720_1280/0/1546919870773?e=2147483647&v=beta&t=RPYZom0Z2he6k6RbAAWK0zJKfZgoJT4wCV9Q_2ymA70');
+            color: white;
+        }
+
+        h2 {
+            margin: 100px 110px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            color: white;
+            justify-content: center;
+            text-shadow: 1px 1px 2px rgb(3, 3, 3), 0 0 1em rgb(34, 0, 128), 0 0 0.2em rgb(0, 0, 0);
+        }
+
+        .button-container {
+            /* margin: 50px; */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            align-items: center; 
+        }
+
+        .button-container1 {
+            /* margin: 50px; */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            align-items: center; 
+        }
+
+        .button-container2 {
+            margin: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            align-items: center; 
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-add:hover, .button-close:hover, .button-va:hover, .button-vae:hover, .button-vc:hover, .button-ve:hover, .button-vip:hover {
+            background: linear-gradient(to bottom, #ffffff, #888888aa);
+            color: #000;
+        }
+        
+        .button-add:active, .button-close:active, .button-va:active, .button-vae:active, .button-vc:active, .button-ve:active, .button-vip:active {
+            background: #46464646;
+            color: #000;
+        }
+
+        .button-add {
+            background: linear-gradient(to top, #db34c8, #520749);
+            color: #fff;
+        }
+
+        .button-close {
+            background: linear-gradient(to top, yellow, #837b0c);
+            color: #fff;
+        }
+
+        .button-vip {
+            background: linear-gradient(to top, #16b2f0, #12475c);
+            color: #fff;
+            
+        }
+
+        .button-vc {
+            background: linear-gradient(to top, #2ecc71, #125c31);
+            color: #fff;
+        }
+
+        .button-va {
+            background: linear-gradient(to top, #f39c12, #694c1d);
+            color: #fff;
+        }
+
+        .button-ve {
+            background: linear-gradient(to top, #e74c3c, #722820);
+            color: #fff;
+        }
+
+        .button-vae {
+            background: linear-gradient(to top, #b216f0, #3e125c);
+            color: #fff;
+        }
+        
+
+
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 56;
+            font-size: 30px;
+        }
+
+        .notification {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            color: #333333;
+            background: #98989846;
+            border: none;
+            outline: none;
+            border-radius: 50%;
+        }
+
+        .notification:hover {
+            cursor: pointer;
+            background-color: #bbb;
+        }
+
+        .notification:active {
+            background-color: #999;
+        }
+
+        .icon-button_badge {
+            position: absolute;
+            top: 0px;
+            right: -3px;
+            width: 20px;
+            height: 20px;
+            background: red;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+        }
+
+        .notification.completed {
+            background: linear-gradient(to top, rgb(82, 82, 82), rgb(169, 169, 169)); /* Change colors for completed state */
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            max-height: 200px;
+            max-width: 350px;
+            width: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .dropdown-content a {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: #333;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f9f9f9;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+
+
+        .dashboard {
+            align-self: stretch;
+            background: rgba(220, 220, 220, 0.813);
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h3 {
+            margin: 0;
+            color: #12475c;
+            /* text-shadow: 1px 1px 2px white, 0 0 1em rgb(34, 0, 128), 0 0 0.2em white; */
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .dashboard-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .changepassword {
+            background: #46464646;
+            color: #000000;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .changepassword:hover {
+            background: linear-gradient(to top, #092631, #12475c);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .logout {
+            background: #46464646;
+            color: #000000;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout:hover {
+            background: linear-gradient(to top, #692018, #c0392b);
+            color: #fff;
+            cursor: pointer;
+        }
+
+
+
+        .content {
+            margin-top: 50px;
+            align-self: center;
+            align-items: center;
+        }
+
+        .button-vip {
+            background: linear-gradient(to top, #16b2f0, #12475c);
+            color: #fff;
+            
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        
+    </style>
+</head>
+<body>
+    
+    <div class="dashboard">
+        <h3>Welcome, {{ username|upper }}!</h3>
+        
+        <div class="dashboard-buttons">
+            <div class="dropdown">
+                <button id="notificationButton" class="notification" onclick="redirectToPage('notifications/',username)">
+                    <span class="material-symbols-outlined">Notifications</span>
+                    <span class="icon-button_badge">{{tasks|length}}</span>
+                </button>
+                <div class="dropdown-content" id="notificationDropdown">
+                    {% for task in tasks %}
+                    <a href="#" onclick="confirmAndRedirect()">{{ task.task_desc }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="button changepassword" onclick="redirectToPage('/changepassword',username)">Change Password</button>
+            <button class="button logout" onclick="buttonOnClick('Logout')">Logout</button>
+        </div>
+    </div>
+
+    <div class= "content" >
+        <button class="button button-vip" onclick="buttonOnClick('add_post')">Add post</button>
+        <button class="button button-vip" onclick="redirectToFilesPage('{{ username }}')">View Files</button>
+    </div>
+    
+
+    <script>
+
+        function redirectToFilesPage(username) {
+            // Use url_for to generate the URL for the display_files route   , username=username
+            var url = '{{ url_for("display_files") }}';
+            
+            // Redirect to the files page
+            window.location.href = url;
+        }
+
+        function buttonOnClick(message) {
+            if (message == "Logout"){
+                alert(message);
+                window.location.href = '/logout';
+            }
+            else if (message == "add_post"){
+                var url = '{{ url_for("add_post") }}';
+                window.location.href = url
+            }
+            
+        }
+
+        function redirectToPage(url,username) {
+            window.location.href = url+username;
+        }
+
+        function redirectTo(url,username,view){
+            window.location.href = url+username+'/'+view;
+        }
+        
+        var username = '{{ session["username"] }}';
+        console.log('Username:', username);
+
+        
+
+    </script>
+
+</body>
+
+</html>

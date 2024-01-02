@@ -1,0 +1,8 @@
+Home page-
+
+-add posts[p]
+-search documents[v]               -- which database?
+-raise a query[p] & forum[p]
+-document summarisation
+-notification[v]
+

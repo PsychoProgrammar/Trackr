@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answer the Question</title>
+ <!-- Include jQuery library -->
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+ <!-- Include emojionearea library via CDN -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.css" integrity="sha512-vEia6TQGr3FqC6h55/NdU3QSM5XR6HSl5fW71QTKrgeER98LIMGwymBVM867C1XHIkYD9nMTfWK2A0xcodKHNA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.js" integrity="sha512-hkvXFLlESjeYENO4CNi69z3A1puvONQV5Uh+G4TUDayZxSLyic5Kba9hhuiNLbHqdnKNMk2PxXKm0v7KDnWkYA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('https://www.genesissolucoes.com.br/contents/1.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #007bff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control-label {
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #007bff;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        body {
+    padding-top: 100px; /* Adjust the padding-top value to provide space for the fixed navigation bar */
+}
+
+        nav {
+    background-color: rgba(220, 220, 220, 0.511);
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    
+    z-index: 1000; /* Set a higher z-index to ensure it appears above other elements */
+}
+
+        /* Style for the right-aligned buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+.btn {
+            display: inline-block;
+            padding: 10px 10px;
+            text-decoration: none;
+            color: #fff;
+            
+            border-radius: 3px;
+            margin-top: 15px;
+        }
+
+        
+
+        .btn.ask-question {
+            background-color: purple;
+        }
+
+        /* Style for the "Logout" button */
+        .btn.logout {
+            background-color: red;
+        }
+
+        .btn.ask-question:hover {
+            background-color: rgb(208, 35, 208);
+        }
+
+        .btn.logout:hover {
+            background-color: rgb(207, 35, 35);
+        }
+
+        a {
+            text-decoration: none;
+            color: whitesmoke;
+            margin-right: 30px;
+        }  
+        
+    </style>
+</head>
+<body>
+    <nav>
+        <div><h3>PF Forum</h3></div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('ask_question') }}" style="text-decoration: none; color: white;" class="btn ask-question">Ask Question</a>
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; color: white;" class="btn logout">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Answer the Question</h2>
+        <form method="POST" action="{{ url_for('answer_question', question_id=question.id) }}">
+            {{ form.hidden_tag() }}
+            <textarea id="myText" name="content"></textarea>
+            
+            <button type="submit" class="btn btn-primary">Submit Answer</button>
+        </form>
+        
+        <a href="{{ url_for('index', username=user.username) }}" class="btn btn-secondary">Back to Index</a>
+    </div>
+
+    <script type="text/javascript">
+        // Ensure the document is ready before initializing emojionearea
+        $(document).ready(function() {
+            $('#myText').emojioneArea({
+                pickerPosition: 'bottom'
+            });
+        });
+    </script>
+</body>
+</html>

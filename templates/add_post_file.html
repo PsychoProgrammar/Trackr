@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Document</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://web-static.wrike.com/blog/content/uploads/2022/03/iStock-904268154-e1646654233106.jpg?av=d2d3e2c60680fbaaf2fba9500e0b3e49');
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            margin: 0;
+            font-family: "Roboto", sans-serif;
+            color: var(--colour-dark);
+            background: var(--colour-light);
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 60%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .radio-options {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .sections-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #uploadSection {
+            /* width: 48%; */
+            justify-content: space-around;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        input[type="submit"] {
+            background-color: #1c866d;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #20574a;
+        }
+
+        button {
+            flex-basis: 100%;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .side-by-side {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 20px;
+            margin-left: 20px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            height: 80%;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            display: list-item;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24;
+            font-size: 150px;
+            position: fixed;
+            margin-right: 270px;
+            margin-top: 50px;
+        }
+        
+	    #drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #drop-area1 {
+            display: inline;
+            flex-direction: column;
+            align-items: initial;
+        }
+
+        .upload_quote1 {
+            font-size: 15px;
+            position: fixed;
+            margin-top: 200px;
+            margin-right: 270px;
+        }
+
+        .upload_quote2 {
+            font-size: 15px;
+            position: fixed;
+            margin-top: 220px;
+            margin-right: 270px;
+        }
+        
+
+
+
+    </style>
+</head>
+
+<body>
+    
+    
+        <form action="/add_post_file" method="post" enctype="multipart/form-data">
+            <h1>Upload</h1>
+    
+            <div class="sections-container">
+                <!-- <img src="C:/Users/7000035069/Desktop/PF_SOCIALS/templates/upload.png" alt="upload"> -->
+                <span class="material-symbols-outlined">cloud_upload</span>
+                <span class="upload_quote1">Drag and drop a file here</span>
+                <span class="upload_quote2"> OR click to choose a file</span>
+                <div id="uploadSection">
+                    <!-- <div id="drop-area">
+                        
+                            
+                            <h6>Drag and drop a file here OR click to choose a file</h6>
+                            
+                        
+                    </div> -->
+                    <input type="file" name="file" id="input-file" accept=".txt,.pdf" >        
+                </div>
+
+                <div class="side-by-side">
+                    <label for="doc_title">Document Title:</label>
+                    <input type="text" id="doc_title" name="doc_title" placeholder="Enter document title" required>
+        
+                    <label for="brief_description">Brief Document Description:</label>
+                    <input type="text" id="brief_description" name="brief_description" placeholder="Enter brief description" required>
+        
+                    <label for="type">Type:</label>
+                    <input type="radio" name="type" value="Learning"> Learning<br>
+                    <input type="radio" name="type" value="Training"> Training<br>
+                    <input type="radio" name="type" value="KT"> KT<br>
+                    <input type="radio" name="type" value="ProjectSpecific"> Project Specific<br>
+                    <input type="radio" name="type" value="UserSpecific"> User Specific<br>
+                    <input type="radio" name="type" value="Others"> Others<br>
+                    <br><br>
+                </div>
+            </div>
+
+            <div class="radio-options">
+                    <input type="radio" id="upload_option" name="option" value="upload" checked  style="display: none;">
+            </div>
+
+            <input type="submit" value="Save Document">
+        </form>
+    
+    <script>
+
+        var username = '{{ session["username"] }}';
+        console.log('Username:', username);
+
+
+	    const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.getElementById('file-preview');
+
+        dropArea.addEventListener("dragover",function(e){
+            e.preventDefault();
+        });
+
+        dropArea.addEventListener("drop",e => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length){
+                fileInput.files = e.dataTransfer.files;
+            }
+            
+        });
+        
+    </script>
+    
+    
+    
+
+</body>
+
+</html>

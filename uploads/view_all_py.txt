@@ -1,0 +1,46 @@
+def get_file_info(file_path):
+    return {
+        'name': os.path.basename(file_path),
+        'path': file_path,
+        'isFolder': os.path.isdir(file_path)
+    }
+
+
+def get_files_in_folder(folder_path):
+    files = []
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        files.append(get_file_info(file_path))
+    return files
+
+
+@app.route('/files', methods=['GET'])
+def get_root_files():
+    try:
+        files = get_files_in_folder(base_folder_path)
+        return jsonify(files)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/files/<path:subpath>', methods=['GET'])
+def get_subfolder_content(subpath):
+    try:
+        subfolder_path = os.path.join(base_folder_path, subpath)
+        files = get_files_in_folder(subfolder_path)
+        return jsonify(files)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/file/<path:file_path>', methods=['GET'])
+def get_file_content(file_path):
+    try:
+        if os.path.isfile(file_path):
+            with open(file_path, 'r') as file:
+                content = file.read()
+                return Response(content, content_type='text/plain')
+        else:
+            return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

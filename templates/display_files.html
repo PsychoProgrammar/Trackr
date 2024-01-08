@@ -1,326 +1,252 @@
-{% from 'folder_content.html' import render_folder_content %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Folder Contents</title>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elegant File Explorer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f5f5f5;
+    }
 
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('https://web-static.wrike.com/blog/content/uploads/2022/03/iStock-904268154-e1646654233106.jpg?av=d2d3e2c60680fbaaf2fba9500e0b3e49');
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
 
-        h1 {
-            background: linear-gradient(rgba(189, 218, 24, 0.897), rgba(112, 130, 13, 0.897));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
+    .navbar, .subfolder-navbar {
+      width: 200px;
+      height: 100%;
+      background-color: #333;
+      color: white;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      transition: width 0.3s;
+      border-right: 1px solid #555;
+      padding: 10px;
+    }
 
+    .sub-navbar {
+      display: none;
+      transition: padding-left 0.3s;
+    }
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            grid-gap: 20px;
-            max-width: 1200px;
-            margin-top: 20px;
-        }
+    .sub-navbar div {
+      cursor: pointer;
+      margin-bottom: 5px;
+      transition: background-color 0.3s;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #555;
+    }
 
-        .grid-item {
-            background-color: #ffffffd2;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border: 1px solid #ddd;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s;
-            flex-direction: column;
-            align-items: center;
-            display: flex;
-            border: 1px solid #ccc;
-        }
+    .folder {
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+    }
 
-        .grid-item:hover {
-            transform: translateY(-5px);
-        }
+    .content {
+      flex-grow: 1;
+      position: relative;
+      display: flex;
+      transition: margin-left 0.3s;
+    }
 
-        .grid-item img {
-            max-width: 80%;
-            max-height: 100px;
-            margin-bottom: 10px;
-        }
+    .iframe-container {
+      flex-grow: 1;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .item-name {
-            display: block;
-            text-decoration: none;
-        }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
-        p {
-            margin: 0;
-            font-size: 16px;
-            color: #666;
-        }
+    .preview-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: #555;
+    }
 
+    .file, .sub-navbar div:hover {
+      background-color: #444;
+      border: 1px solid #555;
+    }
 
-        .dashboard {
-            align-self: stretch;
-            background: rgba(220, 220, 220, 0.813);
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-        }
+    .subfolder-navbar {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 100%;
+      background-color: #333;
+      color: white;
+      overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      transition: left 0.3s;
+      padding: 10px;
+    }
 
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            font-size: 16px;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
+    .subfolder-navbar .box {
+      margin-bottom: 5px;
+      transition: all 0.3s;
+      background-color: #444;
+      border-radius: 5px;
+      border: 1px solid #555;
+      padding: 10px;
+    }
 
-        .goback {
-            background: linear-gradient(to top, #092631, #12475c);
-            color: #fff;
-        }
+    .subfolder-navbar .box-heading {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
 
-        .logout {
-            background: linear-gradient(to top, #692018, #c0392b);
-            color: #fff;
-        }
+    .file:hover {
+      background-color: #555;
+    }
 
-        button {
-            flex-basis: 100%;
-            border: 1px solid #007bff;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-        }
+    .navbar:hover, .sub-navbar:hover {
+      width: 250px;
+    }
 
-        .dashboard_buttons {
-            order: 1;
-            justify-content: space-between;
-        }
+    .navbar:hover .sub-navbar {
+      padding-left: 15px;
+    }
 
-        .pdf-icon {
-            display: inline-block; 
-            width: 60px;
-            height: 60px;
-            background-image: url('https://cdn-icons-png.flaticon.com/512/337/337946.png'); 
-            background-size: cover;
-        }
+    .navbar:hover .content {
+      margin-left: 250px;
+    }
 
-        .docx-icon {
-            display: inline-block; 
-            width: 60px;
-            height: 60px;
-            background-image: url('https://cdn-icons-png.flaticon.com/512/9207/9207490.png'); 
-            background-size: cover;
-        }
+    .navbar .box{
+      padding: 10px;
+      border-radius: 5px;
+    }
 
-        .txt-icon {
-            display: inline-block; 
-            width: 60px;
-            height: 60px;
-            background-image: url('https://cdn-icons-png.flaticon.com/512/337/337956.png'); 
-            background-size: cover;
-        }
-
-        .generic-icon {
-            display: inline-block; 
-            width: 60px;
-            height: 60px;
-            background-image: url('https://www.iconpacks.net/icons/2/free-file-icon-1453-thumb.png');
-            background-size: cover;
-        }        
-
-        
-
-
-
-        
-        form {
-            text-align: center;
-            margin-top: 10px;
-            margin-left: 400px;
-            position: relative;
-        }
-        input[type="text"] {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 300px;
-            box-sizing: border-box;
-        }
-        select {
-            width: 300px;
-            padding: 10px;
-            margin-top: 0px;
-            display: none;
-            position: absolute;
-            z-index: 1;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            max-height: 200px; /* Set a maximum height for the dropdown */
-            overflow: auto; /* Add both vertical and horizontal scrollbars if content overflows */
-            white-space: normal; /* Ensure that content is displayed on a single line */
-        }
-
-        select option {
-            padding: 8px;
-            white-space: nowrap; /* Prevent option text from wrapping */
-        }
-
-        button {
-            background: linear-gradient(to top, #4CAF50, #285c2b);
-            color: white;
-            padding: 10px 15px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .button-search:hover {
-            background: linear-gradient(to top, #255927, #4CAF50);
-        }
-
-    </style>
+  </style>
 </head>
 <body>
-
-    <div class="dashboard">
-        <form method="post" action="/display_files" id="searchForm">
-            <input type="text" name="search_query" id="search_query" placeholder="Search documents...">
-            <select name="results" id="results" size="5">
-                {% if query %}
-                    {% if results%}
-                        {% for result in results %}
-                            <option value="{{ result }}">{{ result }}</option>
-                        {% endfor %}
-                    {% else %}
-                        <option value="">No results found</option>
-                    {% endif %}
-                {% endif %}
-            </select>
-            <button type="button" class="button-search" onclick="performSearch()">Search</button>
-        </form>
-            
-        <div class="dashboard_buttons">
-            
-            <button class="button goback" onclick="redirectToPage('/dashboard')">Main Page</button>
-            <button class="button logout" onclick="handleButtonClick('Logout')">Logout</button>
-        </div>
+  <div class="container">
+    <div id="navbar" class="navbar">
+      <div class="box">
+        <div class="box-heading">Files</div>
+        <!-- Files will be dynamically added here -->
+      </div>
+      <div class="box">
+        <div class="box-heading">Folders</div>
+        <!-- Folders will be dynamically added here -->
+      </div>
     </div>
-
-    <!-- <h1>DATABASE</h1> -->
-    <div class="grid-wrapper">
-            <div class="grid-container">
-                {{ render_folder_content(folder_content, get_folder_content) }}
-            </div>
+    <div id="subfolderNavbar" class="subfolder-navbar">
+      <div class="box">
+        <div class="box-heading">Subfolder Files</div>
+        <!-- Subfolder files will be dynamically added here -->
+      </div>
     </div>
+    <div id="content" class="content">
+      <div class="iframe-container">
+        <iframe id="fileViewer" src="" frameborder="0"></iframe>
+        <div class="preview-message">Select a file to preview</div>
+      </div>
+    </div>    
+  </div>
 
-    <script>
-        function redirectToPage(url) {
-            window.location.href = url;
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+  const navbar = document.getElementById('navbar');
+  const fileViewer = document.getElementById('fileViewer');
+  const previewMessage = document.querySelector('.preview-message');
+  const subfolderNavbar = document.getElementById('subfolderNavbar');
+
+  let selectedFile = null;
+
+  function createFileElement(file) {
+    const fileElement = document.createElement('div');
+    fileElement.textContent = file.name;
+    fileElement.classList.add('file', 'box');
+    if (file.isFolder) {
+      fileElement.classList.add('folder');
+      fileElement.addEventListener('click', () => {
+        fetch(`/files/${file.path}`)
+          .then(response => response.json())
+          .then(subfolderContent => {
+            selectedFile = null; // Clear the selected file
+            renderSubfolder(subfolderContent, file);
+          })
+          .catch(error => {
+            console.error('Error fetching subfolder content:', error);
+          });
+      });
+    } else {
+      fileElement.addEventListener('click', () => {
+        // Set the iframe source to display file content
+        if (file.name.endsWith('.pdf')) {
+          fileViewer.src = `https://docs.google.com/gview?url=${encodeURIComponent(`/file/${file.path}`)}&embedded=true`;
+        } else {
+          fileViewer.src = `/file/${file.path}`;
         }
+        previewMessage.style.display = 'none';
 
-        var username = '{{ session["username"] }}';
-        console.log('Username:', username);
+        // Hide the subfolder navbar when a file is selected
+        subfolderNavbar.style.display = 'none';
 
-        function handleButtonClick(message) {
-            if (message == "Logout"){
-                alert(message);
-                window.location.href = '/logout';
-            }
-        }
+        // Update the selected file
+        selectedFile = file;
+      });
+    }
 
-        var prevQuery = search_query.text;
+    return fileElement;
+  }
 
-        function performSearch() {
-            var searchInput = document.getElementById('search_query');
-            var resultsDropdown = document.getElementById('results');
-            var searchForm = document.getElementById('searchForm');
+  function renderSubfolder(subfolderContent, selectedFolder) {
+    subfolderNavbar.innerHTML = '';
 
-            // Clear previous results
-            resultsDropdown.innerHTML = '';
-            
-            if (search_query.value.trim() === '') {
-                // Refresh the page when the search input is empty
-                location.reload();
-                return;
-            }
+    // Display the subfolder navbar to the right
+    subfolderNavbar.style.display = 'block';
 
+    // Show "Select a file to preview" message when a subfolder is selected
+    fileViewer.src = '';
+    previewMessage.style.display = 'block';
 
-            // Do the search and populate results
-            fetch('/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: searchInput.value }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.results.length > 0) {
-                    data.results.forEach(result => {
-                        var option = document.createElement('option');
-                        option.value = result;
-                        option.text = new URL(result).pathname.split('/').pop();
-                        resultsDropdown.add(option);
-                    });
+    subfolderContent.forEach(subfile => {
+      const subfileElement = createFileElement(subfile);
+      subfolderNavbar.appendChild(subfileElement);
+    });
 
-                    // Show the results dropdown
-                    resultsDropdown.style.display = 'block';
-                }
-                else {
-                    // Display a message when there are no results
-                    var option = document.createElement('option');
-                    option.value = '';
-                    option.text = 'No results found';
-                    resultsDropdown.add(option);
-                    resultsDropdown.style.display = 'block';
-                }
+    // Update the selected file when a subfolder is selected
+    selectedFile = selectedFolder;
+  }
 
-            });
-        }
+  // Fetch file names from the root folder
+  fetch('/files')
+    .then(response => response.json())
+    .then(data => {
+      const filesBox = document.querySelector('.box:nth-child(1)');
+      const foldersBox = document.querySelector('.box:nth-child(2)');
 
-        document.addEventListener('change', function (event) {
-            var resultsDropdown = document.getElementById('results');
-            var selectedValue = new URL(resultsDropdown.value).pathname.split('/').slice(2).join('/');
-            // Redirect to the selected URL
-            if (selectedValue) {
-                window.location.href = '/view/' + selectedValue;
-            }
-        });
+      data.forEach(file => {
+        const fileElement = createFileElement(file);
 
-        document.addEventListener('click', function(event) {
-            var resultsDropdown = document.getElementById('results');
-            var searchInput = document.getElementById('search_query');
+        // Append files to the "Files" box and folders to the "Folders" box
+        file.isFolder ? foldersBox.appendChild(fileElement) : filesBox.appendChild(fileElement);
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching root folder content:', error);
+    });
+});
 
-            if (event.target !== resultsDropdown && event.target !== searchInput) {
-                resultsDropdown.style.display = 'none';
-            }
-        });
-
-    </script>
+  </script>
 </body>
 </html>

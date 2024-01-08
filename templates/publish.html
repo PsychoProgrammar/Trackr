@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: "Roboto", sans-serif;
+            color: var(--colour-dark);
+            background: var(--colour-light);
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        .card {
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            height: 150px;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            width: 90%;
+            height: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 700,
+            'GRAD' 0,
+            'opsz' 24;
+            margin-right: 20px;
+            margin-left: 20px;
+            font-size: 50px;
+        }
+
+        .card-body {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        h5, p {
+            margin: 0;
+        }
+
+        h5 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        #popup-content {
+            margin-top: 20px;
+        }
+
+        #popup h2 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        #popup p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .dashboard_buttons {
+            align-self: flex-start;
+            background: rgba(220, 220, 220, 0.813);
+            color: #fff;
+            display: flex;
+            justify-content: space-around;
+            align-items: space-around;
+            padding: 20px;
+        }
+        
+        .container_main {
+            display: flex;
+            flex-direction: column; /* Align items vertically */
+            align-items: center;
+            height: 100vh;
+            }
+
+        .container {
+            margin-top: 50px;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container_main">
+    <div class="dashboard_buttons">
+        <button class="button goback" onclick="redirectToPage('/dashboard')">Main Page</button>
+        <button class="button logout" onclick="handleButtonClick('Logout')">Logout</button>
+    </div>    
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card" onclick="loadPopupContent('add_post_doc')">
+                    <div class="card-body">
+                        <span class="material-symbols-outlined">edit_document</span>
+                        <div>
+                            <h5 class="card-title">Create</h5>
+                            <p class="card-text">Create a new document and publish it</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card" onclick="loadPopupContent('add_post_file')">
+                    <div class="card-body">
+                        <span class="material-symbols-outlined">upload_file</span>                    
+                        <div>
+                            <h5 class="card-title">Upload</h5>
+                            <p class="card-text">Upload a document and publish it</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card" onclick="loadPopupContent('add_post_post')">
+                    <div class="card-body">
+                        <span class="material-symbols-outlined">draw</span>
+                        <div>
+                            <h5 class="card-title">Post</h5>
+                            <p class="card-text">Add your photos, achievements and let the people know</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card" onclick="loadPopupContent('add_post_ask')">
+                    <div class="card-body">
+                        <span class="material-symbols-outlined">live_help</span>
+                        <div>
+                            <h5 class="card-title">Ask</h5>
+                            <p class="card-text">Ask a question and let the people solve it with you</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+
+    <div id="popup">
+        <span class="close-btn" onclick="hidePopup()">&times;</span>
+        <iframe id="popup-content" frameborder="0"></iframe>
+    </div>
+
+<script>
+    function showPopup() {
+        document.getElementById('popup').style.display = 'block';
+    }
+
+    function hidePopup() {
+        document.getElementById('popup').style.display = 'none';
+        location.reload();
+    }
+
+    function loadPopupContent(url) {
+        document.getElementById('popup-content').src = url;
+        showPopup();
+    }
+
+    function redirectToPage(url) {
+            window.location.href = url;
+        }
+
+        var username = '{{ session["username"] }}';
+        console.log('Username:', username);
+
+        function handleButtonClick(message) {
+            if (message == "Logout"){
+                alert(message);
+                window.location.href = '/logout';
+            }
+        }
+
+</script>
+
+</body>
+</html>

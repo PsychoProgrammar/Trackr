@@ -1,0 +1,352 @@
+{% from 'folder_content.html' import render_folder_content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder Contents</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('https://web-static.wrike.com/blog/content/uploads/2022/03/iStock-904268154-e1646654233106.jpg?av=d2d3e2c60680fbaaf2fba9500e0b3e49');
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h3 {
+            background: linear-gradient(rgba(189, 218, 24, 0.897), rgba(112, 130, 13, 0.897));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-left: 100px;
+        }
+
+
+        .grids-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+        .grid-wrapper {
+            display: flex;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-gap: 20px;
+            max-width: 600px;
+            margin: 20px;
+            border: 1px solid #ddd; 
+            padding: 10px; 
+        }
+
+        .grid-item {
+            display: flex;
+            background-color: #ffffffd2;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            flex-direction: column;
+            align-items: center;
+            
+            border: 1px solid #ccc;
+            
+        }
+
+        .grid-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .grid-item img {
+            max-width: 80%;
+            max-height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            display: block;
+            text-decoration: none;
+            
+        }
+
+        p {
+            margin: 0;
+            font-size: 16px;
+            color: #666;
+        }
+
+
+        .dashboard {
+            align-self: stretch;
+            background: rgba(220, 220, 220, 0.813);
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .goback {
+            background: linear-gradient(to top, #092631, #12475c);
+            color: #fff;
+        }
+
+        .logout {
+            background: linear-gradient(to top, #692018, #c0392b);
+            color: #fff;
+        }
+
+        button {
+            flex-basis: 100%;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .dashboard_buttons {
+            order: 1;
+            justify-content: space-between;
+        }
+
+        .pdf-icon {
+            display: inline-block; 
+            width: 60px;
+            height: 60px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/337/337946.png'); 
+            background-size: cover;
+        }
+
+        .docx-icon {
+            display: inline-block; 
+            width: 60px;
+            height: 60px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/9207/9207490.png'); 
+            background-size: cover;
+        }
+
+        .txt-icon {
+            display: inline-block; 
+            width: 60px;
+            height: 60px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/337/337956.png'); 
+            background-size: cover;
+        }
+
+        .generic-icon {
+            display: inline-block; 
+            width: 60px;
+            height: 60px;
+            background-image: url('https://www.iconpacks.net/icons/2/free-file-icon-1453-thumb.png');
+            background-size: cover;
+        }        
+
+        
+
+
+
+        
+        form {
+            text-align: center;
+            margin-top: 10px;
+            margin-left: 400px;
+            position: relative;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            box-sizing: border-box;
+        }
+        select {
+            width: 300px;
+            padding: 10px;
+            margin-top: 0px;
+            display: none;
+            position: absolute;
+            z-index: 1;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            max-height: 200px; /* Set a maximum height for the dropdown */
+            overflow: auto; /* Add both vertical and horizontal scrollbars if content overflows */
+            white-space: normal; /* Ensure that content is displayed on a single line */
+        }
+
+        select option {
+            padding: 8px;
+            white-space: nowrap; /* Prevent option text from wrapping */
+        }
+
+        button {
+            background: linear-gradient(to top, #4CAF50, #285c2b);
+            color: white;
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button-search:hover {
+            background: linear-gradient(to top, #255927, #4CAF50);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <form method="post" action="/display_files" id="searchForm">
+            <input type="text" name="search_query" id="search_query" placeholder="Search documents...">
+            <select name="results" id="results" size="5">
+                {% if query %}
+                    {% if results%}
+                        {% for result in results %}
+                            <option value="{{ result }}">{{ result }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No results found</option>
+                    {% endif %}
+                {% endif %}
+            </select>
+            <button type="button" class="button-search" onclick="performSearch()">Search</button>
+        </form>
+            
+        <div class="dashboard_buttons">
+            
+            <button class="button goback" onclick="redirectToPage('/dashboard')">Main Page</button>
+            <button class="button logout" onclick="handleButtonClick('Logout')">Logout</button>
+        </div>
+    </div>
+
+    <!-- <h1>DATABASE</h1> -->
+    <div class="grids-wrapper">
+
+        <div class="grid-wrapper">
+            <div class="grid-container">
+                <h3>Pending Approval</h3><br><br>
+                {{ render_folder_content(folder_content, get_folder_content) }}
+            </div>
+        </div>
+
+        <div class="grid-wrapper">
+                <div class="grid-container">
+                    <h3>View All Documents</h3><br><br>
+                    {{ render_folder_content(folder_content, get_folder_content) }}
+                </div>
+        </div>
+
+    </div>
+
+    <script>
+        function redirectToPage(url) {
+            window.location.href = url;
+        }
+
+        var username = '{{ session["username"] }}';
+        console.log('Username:', username);
+
+        function handleButtonClick(message) {
+            if (message == "Logout"){
+                alert(message);
+                window.location.href = '/logout';
+            }
+        }
+
+        var prevQuery = search_query.text;
+
+        function performSearch() {
+            var searchInput = document.getElementById('search_query');
+            var resultsDropdown = document.getElementById('results');
+            var searchForm = document.getElementById('searchForm');
+
+            // Clear previous results
+            resultsDropdown.innerHTML = '';
+            
+            if (search_query.value.trim() === '') {
+                // Refresh the page when the search input is empty
+                location.reload();
+                return;
+            }
+
+
+            // Do the search and populate results
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: searchInput.value }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.results.length > 0) {
+                    data.results.forEach(result => {
+                        var option = document.createElement('option');
+                        option.value = result;
+                        option.text = new URL(result).pathname.split('/').pop();
+                        resultsDropdown.add(option);
+                    });
+
+                    // Show the results dropdown
+                    resultsDropdown.style.display = 'block';
+                }
+                else {
+                    // Display a message when there are no results
+                    var option = document.createElement('option');
+                    option.value = '';
+                    option.text = 'No results found';
+                    resultsDropdown.add(option);
+                    resultsDropdown.style.display = 'block';
+                }
+
+            });
+        }
+
+        document.addEventListener('change', function (event) {
+            var resultsDropdown = document.getElementById('results');
+            var selectedValue = new URL(resultsDropdown.value).pathname.split('/').slice(2).join('/');
+            // Redirect to the selected URL
+            if (selectedValue) {
+                window.location.href = '/view/' + selectedValue;
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            var resultsDropdown = document.getElementById('results');
+            var searchInput = document.getElementById('search_query');
+
+            if (event.target !== resultsDropdown && event.target !== searchInput) {
+                resultsDropdown.style.display = 'none';
+            }
+        });
+
+    </script>
+</body>
+</html>

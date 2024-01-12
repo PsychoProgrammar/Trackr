@@ -1,174 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create</title>
-    <style>
-        body {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://web-static.wrike.com/blog/content/uploads/2022/03/iStock-904268154-e1646654233106.jpg?av=d2d3e2c60680fbaaf2fba9500e0b3e49');
-            background-size: cover;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            margin: 0;
-            font-family: "Roboto", sans-serif;
-            color: var(--colour-dark);
-            background: var(--colour-light);
-            overflow-x: hidden;
-        }
-
-        .container {
-            width: 60%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        form {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .radio-options {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 15px;
-        }
-
-        label {
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-        }
-
-        input[type="radio"] {
-            margin-right: 5px;
-        }
-
-        .sections-container {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #uploadSection {
-            /* width: 48%; */
-            justify-content: space-around;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            margin-left: 0;
-            display: flex;
-            width: 316px; 
-            height: 315px;
-        }
-
-        
-
-        input[type="submit"] {
-            background-color: #1c866d;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #20574a;
-        }
-
-        button {
-            flex-basis: 100%;
-            border: 1px solid #007bff;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .side-by-side {
-            display: inline-block;
-            vertical-align: top;
-            margin-right: 20px;
-            margin-left: 20px;
-        }
-
-
-    </style>
+    <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 </head>
-
 <body>
-    <form action="/add_post_doc" method="post" enctype="multipart/form-data">
-        <h1>Create</h1>
+    <h1>Create</h1>
 
-        <div class="sections-container">
-
-            <div id="uploadSection">
-                <label for="content"></label>
-                <textarea id="content" name="content" placeholder="Write your main document description..." ></textarea>
-            </div>
-
-            <div class="side-by-side">
-            <label for="doc_title">Document Title:</label>
-            <input type="text" id="doc_title" name="doc_title" placeholder="Enter document title" required>
-
-            <label for="brief_description">Brief Document Description:</label>
-            <input type="text" id="brief_description" name="brief_description" placeholder="Enter brief description" required>
-
-            <label for="type">Type:</label>
-            <input type="radio" name="type" value="Learning"> Learning<br>
-            <input type="radio" name="type" value="Training"> Training<br>
-            <input type="radio" name="type" value="KT"> KT<br>
-            <input type="radio" name="type" value="ProjectSpecific"> Project Specific<br>
-            <input type="radio" name="type" value="UserSpecific"> User Specific<br>
-            <input type="radio" name="type" value="Others"> Others<br>
-            <br><br>
-            </div>
-        
-            <div class="radio-options">
-            <input type="radio" id="write_option" name="option" value="write" checked  style="display: none;">
-            </div>
-        </div>
-            <input type="submit" value="Save Document">
-        
+    <form action="/generate_pdf" method="post">
+        <div id="editor" style="height: 300px;"></div>
+        <input type="hidden" id="content" name="content">
+        <br><br>
+        <input type="submit" value="Generate PDF">
     </form>
 
     <script>
-        var username = '{{ session["username"] }}';
-        console.log('Username:', username);
-        
+        var quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+
+        document.querySelector('form').onsubmit = function() {
+            var contentInput = document.querySelector('#content');
+            contentInput.value = quill.root.innerHTML;
+        };
     </script>
 </body>
 </html>

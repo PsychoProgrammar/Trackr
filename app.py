@@ -1,4 +1,8 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session, send_from_directory,jsonify, send_file, Response
+from flask import Flask, render_template, request, flash, redirect, url_for, session, send_from_directory,jsonify, send_file, Response, make_response
+from io import BytesIO
+# from xhtml2pdf import pisa
+from bs4 import BeautifulSoup
+import pdfkit
 import psycopg2
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -17,6 +21,12 @@ import base64
 from wtforms import BooleanField, MultipleFileField, StringField, TextAreaField, FileField, SubmitField
 from wtforms.validators import DataRequired, InputRequired
 from flask_wtf.file import FileField, FileAllowed
+
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.pdfgen import canvas
+from pdfme import PDF
+
+
 
 
 # Flask app configuration
@@ -57,21 +67,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 admin_credentials = {'username': 'admin', 'password': 'admin123'}
-
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    image_data = db.Column(db.ARRAY(db.String), nullable=True)  # Array to store multiple images
-    user_id = db.Column(db.Integer, db.ForeignKey('users1.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('questions', lazy=True))
-    answers = db.relationship('Answer', backref='question', lazy=True)
-
-class QuestionForm(FlaskForm):
-    #title = StringField('Title', validators=[InputRequired()])
-    content = TextAreaField('Content', validators=[InputRequired()])
-    images = FileField('Upload Images', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif'])])
-    submit = SubmitField('Ask Question')
 
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -171,9 +166,25 @@ def add_post_doc():
         if option == 'write':
             content = request.form['content']
             # Create a directory to store written documents if not exists
-            write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'written_documents')
-            os.makedirs(write_dir, exist_ok=True)
+            if doc_type == 'Learning':
+                write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Learning')
 
+            elif doc_type == 'Training':
+                write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Training')
+
+            elif doc_type == 'KT':
+                write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'KT')
+
+            elif doc_type == 'ProjectSpecific':
+                write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'ProjectSpecific')
+
+            elif doc_type == 'UserSpecific':
+                write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'UserSpecific')
+
+            else:
+                write_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Others')
+            
+            os.makedirs(write_dir, exist_ok=True)
             # Save the document as a text file
             file_path = os.path.join(write_dir, f"{doc_title}.txt")
             with open(file_path, 'w', encoding='utf-8') as file:
@@ -202,15 +213,15 @@ def get_folder_content(path):
             content.append(info)
     return content
 
-@app.route('/display_files', methods=['POST','GET'])
-def display_files():
-    directory = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
-    folder_content = get_folder_content(directory)
-    if request.method == 'POST':
-        query = request.form.get('search_query')
-        results = search_documents(query)
-        return render_template('display_files.html', folder_content=folder_content, get_folder_content=get_folder_content, query=query, results=results)
-    return render_template('display_files.html', folder_content=folder_content, get_folder_content=get_folder_content, query='', results=[])
+# @app.route('/display_files', methods=['POST','GET'])
+# def display_files():
+#     directory = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
+#     folder_content = get_folder_content(directory)
+#     if request.method == 'POST':
+#         query = request.form.get('search_query')
+#         results = search_documents(query)
+#         return render_template('display_files.html', folder_content=folder_content, get_folder_content=get_folder_content, query=query, results=results)
+#     return render_template('display_files.html', folder_content=folder_content, get_folder_content=get_folder_content, query='', results=[])
 
 def split_string(value, separator):
     return value.split(separator)
@@ -222,13 +233,13 @@ def view_file(filename):
     file_path = os.path.join(".", filename).replace(os.sep, '/') 
     return render_template('view_file.html', file_path=file_path)
 
-# @app.route('/files/<path:filename>')
-# def get_file(filename):
-#     parts = filename.split('/')
-#     undesired_parts = [0,1,2,3,4]
-#     remaining_parts = [part for index, part in enumerate(parts) if index not in undesired_parts]
-#     result = '/'.join(remaining_parts)
-#     return send_from_directory('uploads',result)
+@app.route('/filesold/<path:filename>')
+def get_file(filename):
+    parts = re.split(r'[\\\/]', filename)
+    undesired_parts = [0,1,2,3,4]
+    remaining_parts = [part for index, part in enumerate(parts) if index not in undesired_parts]
+    result = '/'.join(remaining_parts)
+    return send_from_directory('uploads',result)
 
 
 
@@ -331,11 +342,26 @@ def add_post_file():
         if option == 'upload':
                 uploaded_file = request.files['file']
                 # Create a directory to store uploaded files if not exists
-                upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_files')
-                os.makedirs(upload_dir, exist_ok=True)
+                if doc_type == 'Learning':
+                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Learning')
 
-                # Save the uploaded file
+                elif doc_type == 'Training':
+                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Training')
+
+                elif doc_type == 'KT':
+                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'KT')
+
+                elif doc_type == 'ProjectSpecific':
+                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'ProjectSpecific')
+
+                elif doc_type == 'UserSpecific':
+                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'UserSpecific')
+
+                else:
+                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Others')
                 
+                os.makedirs(upload_dir, exist_ok=True)
+                # Save the uploaded file
                 if uploaded_file:
                     file_path = os.path.join(upload_dir, uploaded_file.filename)
                     uploaded_file.save(file_path)
@@ -353,12 +379,27 @@ def add_post_file():
 
     return render_template('add_post_file.html')
 
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    image_data = db.Column(db.ARRAY(db.String), nullable=True)  # Array to store multiple images
+    user_id = db.Column(db.Integer, db.ForeignKey('users1.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('questions', lazy=True))
+    answers = db.relationship('Answer', backref='question', lazy=True)
+ 
+class QuestionForm(FlaskForm):
+    title = StringField('Title', validators=[InputRequired()])
+    content = TextAreaField('Content', validators=[InputRequired()])
+    images = FileField('Upload Images', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif'])])
+    submit = SubmitField('Ask Question')
+ 
 @app.route('/add_post_ask', methods=['GET', 'POST'])
-def add_post_ask():
+def ask_question():
     form = QuestionForm()
     user = User.query.filter_by(username=session['username']).first()
     if form.validate_on_submit():
-        #title = form.title.data
+        title = form.title.data
         content = form.content.data
         images = request.files.getlist('images')
  
@@ -370,22 +411,33 @@ def add_post_ask():
                 image_data.append(base64.b64encode(image_file.read()).decode('utf-8'))
             else:
                 image_data.append(None)
-        question = Question( content=content, user=user, image_data=image_data)
+        question = Question(title=title, content=content, user=user, image_data=image_data)
         db.session.add(question)
         db.session.commit()
        
  
         #flash('Question posted successfully!', 'success')
-        return redirect(url_for('index', username=session['username']))
+        return redirect(url_for('ask_question', username=session['username']))
  
     return render_template('add_post_ask.html', form=form,user=user)
 
-
+@app.route("/<username>")
+def index(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        questions = Question.query.all()
+        return render_template("index.html", questions=questions, user=user)
+    else:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/add_post_post', methods=['POST','GET'])
 def add_post_post():
     return render_template('add_post_post.html')
 
+@app.route('/display_files', methods=['POST','GET'])
+def display_files():
+    return render_template("display_files.html")
 
 base_folder_path = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
 
@@ -424,9 +476,15 @@ def get_subfolder_content(subpath):
 def get_file_content(file_path):
     try:
         if os.path.isfile(file_path):
-            with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
+            
+            parts = file_path.split('/')
+            undesired_parts = [0,1,2,3,4]
+            remaining_parts = [part for index, part in enumerate(parts) if index not in undesired_parts]
+            result = '/'.join(remaining_parts)
+            print(result)
+            with open(result, 'rb') as file:
                 content = file.read()
-                return Response(content, content_type='text/plain; charset=utf-8')
+            return Response(content, content_type='application/pdf')
         else:
             return jsonify({'error': 'File not found'}), 404
     except Exception as e:
@@ -443,6 +501,58 @@ def get_file_content(file_path):
 #     except Exception as e:
 #         return jsonify({'error': str(e)}), 500
 
+# @app.route('/generate_pdf', methods=['POST'])
+# def generate_pdf():
+#     content = request.form['content']
+
+#     # Create a PDF document
+#     pdf_filename = 'output.pdf'
+#     with open(pdf_filename, 'wb') as f:
+#         c = canvas.Canvas(f)
+#         c.drawString(100, 750, content)  # Adjust the position as needed
+#         c.save()
+
+#     return send_file(pdf_filename, as_attachment=True)
+    
+
+
+from fpdf import FPDF
+# from html2pdf import HTML2PDF
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, 'PDF Generator', 0, 1, 'C')
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.cell(0, 10, 'Page %s' % self.page_no(), 0, 0, 'C')
+
+
+@app.route('/generate_pdf', methods=['POST'])
+def generate_pdf():
+    content = request.form['content']
+
+    # Create a PDF document
+    pdf = PDF()
+    pdf.add_page()
+
+    # Set font and size
+    pdf.set_font("Arial", size=12)
+
+    # Parse HTML content
+    soup = BeautifulSoup(content, 'html.parser')
+    formatted_text = soup.get_text("\n", strip=True)
+
+    # Add content to the PDF
+    pdf.multi_cell(0, 10, formatted_text)
+
+    # Save the PDF to a file
+    pdf_filename = 'output.pdf'
+    pdf.output(pdf_filename)
+
+    return send_file(pdf_filename, as_attachment=True)
 
 if __name__ == '__main__':
     with app.app_context():

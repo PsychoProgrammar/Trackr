@@ -164,8 +164,67 @@
             margin-top: 220px;
             margin-right: 270px;
         }
-        
+ 
+        #loading-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-top: 20px;
+        }
 
+        #loading-spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px; /* Add margin for spacing */
+        }
+
+        /* .progress_bar {
+            width: 170px;
+            height: 20px;
+            border-radius: 20px;
+            background: repeating-linear-gradient(135deg, #daf5ff 0 10px, #6d06cd 0 20px) 0/0% no-repeat,
+                        repeating-linear-gradient(135deg, #ddd 0 10px, #eee 0 20px) 0/100%;
+            animation: p1 145s infinite;
+            text-align: center;
+            margin: 0 auto;
+        } */
+
+        .progress_bar {
+            width: 170px;
+            height: 22px;
+            border-radius: 20px;
+            background: repeating-linear-gradient(135deg, #6d06cd 0 10px, #6d06cd 0 20px) 0/0% no-repeat,
+                        repeating-linear-gradient(135deg, white 0 10px, white 0 20px) 0/100%;
+            border: 2px solid;
+            position: relative;
+            animation: p1 145s infinite;
+            text-align: center;
+            margin: 0 auto;
+            padding: 2px; 
+        }
+
+
+
+        @keyframes p1 {
+            100% {
+                background-size: 98%;
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
 
     </style>
@@ -174,76 +233,72 @@
 <body>
     
     
-        <form action="/add_post_file" method="post" enctype="multipart/form-data">
-            <h1>Upload</h1>
-    
-            <div class="sections-container">
-                <!-- <img src="C:/Users/7000035069/Desktop/PF_SOCIALS/templates/upload.png" alt="upload"> -->
-                <span class="material-symbols-outlined">cloud_upload</span>
-                <span class="upload_quote1">Drag and drop a file here</span>
-                <span class="upload_quote2"> OR click to choose a file</span>
-                <div id="uploadSection">
-                    <!-- <div id="drop-area">
-                        
-                            
-                            <h6>Drag and drop a file here OR click to choose a file</h6>
-                            
-                        
-                    </div> -->
-                    <input type="file" name="file" id="input-file" accept=".txt,.pdf" >        
-                </div>
+    <form id="upload-form" action="/add_post_file" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+        <h1>Upload</h1>
 
-                <div class="side-by-side">
-                    <label for="doc_title">Document Title:</label>
-                    <input type="text" id="doc_title" name="doc_title" placeholder="Enter document title" required>
-        
-                    <label for="brief_description">Brief Document Description:</label>
-                    <input type="text" id="brief_description" name="brief_description" placeholder="Enter brief description" required>
-        
-                    <label for="type">Type:</label>
-                    <input type="radio" name="type" value="Learning"> Learning<br>
-                    <input type="radio" name="type" value="Training"> Training<br>
-                    <input type="radio" name="type" value="KT"> KT<br>
-                    <input type="radio" name="type" value="ProjectSpecific"> Project Specific<br>
-                    <input type="radio" name="type" value="UserSpecific"> User Specific<br>
-                    <input type="radio" name="type" value="Others"> Others<br>
-                    <br><br>
-                </div>
+        <div class="sections-container">
+            <!-- <img src="C:/Users/7000035069/Desktop/PF_SOCIALS/templates/upload.png" alt="upload"> -->
+            <span class="material-symbols-outlined">cloud_upload</span>
+            <span class="upload_quote1">Drag and drop a file here</span>
+            <span class="upload_quote2"> OR click to choose a file</span>
+            <div id="uploadSection">
+                
+                <input type="file" name="file" id="input-file" accept=".pdf" >        
             </div>
 
-            <div class="radio-options">
-                    <input type="radio" id="upload_option" name="option" value="upload" checked  style="display: none;">
-            </div>
-
-            <input type="submit" value="Save Document">
-        </form>
+            <div class="side-by-side">
+                <label for="doc_title">Document Title:</label>
+                <input type="text" id="doc_title" name="doc_title" placeholder="Enter document title" required>
     
+                <label for="brief_description">Brief Document Description:</label>
+                <input type="text" id="brief_description" name="brief_description" placeholder="Enter brief description" required>
+    
+                <label for="type">Type:</label>
+                <input type="radio" name="type" value="Learning"> Learning<br>
+                <input type="radio" name="type" value="Training"> Training<br>
+                <input type="radio" name="type" value="KT"> KT<br>
+                <input type="radio" name="type" value="ProjectSpecific"> Project Specific<br>
+                <input type="radio" name="type" value="UserSpecific"> User Specific<br>
+                <input type="radio" name="type" value="Others"> Others<br>
+                <br><br>
+            </div>
+        </div>
+
+        <div class="radio-options">
+                <input type="radio" id="upload_option" name="option" value="upload" checked  style="display: none;">
+        </div>
+
+        <input type="submit" id="upload-btn" value="Save Document">
+        
+        
+    </form>
+        
+    <div id="loading-container" style="display: none;">
+        <p id="loading-message">Uploading file...</p>
+        <div class="progress_bar"></div>
+    </div>       
+        
     <script>
 
         var username = '{{ session["username"] }}';
         console.log('Username:', username);
 
+        function showLoading() {
+            // Display loading container
+            document.getElementById('loading-container').style.display = 'block';
 
-	    const dropArea = document.getElementById('drop-area');
-        const fileInput = document.getElementById('file-input');
-        const filePreview = document.getElementById('file-preview');
-
-        dropArea.addEventListener("dragover",function(e){
-            e.preventDefault();
-        });
-
-        dropArea.addEventListener("drop",e => {
-            e.preventDefault();
-            if (e.dataTransfer.files.length){
-                fileInput.files = e.dataTransfer.files;
-            }
+            // Change loading message
+            document.getElementById('loading-message').innerText = 'Uploading file... Please wait.\nDo not close the prompt until the progress bar reaches 100%';
             
-        });
+            // Disable the submit button to prevent multiple submissions
+            document.getElementById('upload-btn').setAttribute('disabled', 'true');
+            
+            // You may also want to hide the file input or other elements during the upload
+            document.getElementById('upload-form').style.display = 'none';
+        }
+        
         
     </script>
-    
-    
-    
 
 </body>
 

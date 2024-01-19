@@ -1,6 +1,0 @@
-Title: doc1
-
-Brief Description: doc1
-
-Content:
-qwerty

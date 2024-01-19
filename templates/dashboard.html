@@ -273,8 +273,8 @@
         }
 
         .button-vip {
-            background: linear-gradient(to top, #16b2f0, #12475c);
-            color: #fff;
+            background-color:  #eee;
+            color: #000;
             
         }
 
@@ -320,8 +320,7 @@
         <button class="button button-vip" onclick="buttonOnClick('publish')">Publish Document</button>
         <button class="button button-vip" onclick="redirectToUFilesPage('{{ username }}')">User Analyze</button>
         <button class="button button-vip" onclick="redirectToAFilesPage('{{ username }}')">Pending Approvals</button>
-        <button class="button button-vip" onclick="redirectToSummaryPage()">Summarize</button>
-        <button class="button button-vip" onclick="redirectToEngagePage()">Engagement</button>
+        
         
     </div>
     
@@ -334,19 +333,11 @@
         }
 
         function redirectToAFilesPage(username) {
-            var url = '{{ url_for("admin_approval") }}';
+            var url = '{{ url_for("admin_dashboard") }}';
             window.location.href = url;
         }
 
-        function redirectToSummaryPage() {
-            var url = '{{ url_for("create_summary") }}';
-            window.location.href = url;
-        }
 
-        function redirectToEngagePage() {
-            var url = '{{ url_for("query_page") }}';
-            window.location.href = url;
-        }
 
 
         function buttonOnClick(message) {

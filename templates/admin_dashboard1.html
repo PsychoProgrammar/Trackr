@@ -18,39 +18,6 @@
       height: 100vh;
     }
 
-    .navbar, .subfolder-navbar {
-      width: 200px;
-      height: 100%;
-      background-color: #333;
-      color: white;
-      overflow-y: auto;
-      position: relative;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-      transition: width 0.3s;
-      border-right: 1px solid #555;
-      padding: 10px;
-    }
-
-    .sub-navbar {
-      display: none;
-      transition: padding-left 0.3s;
-    }
-
-    .sub-navbar div {
-      cursor: pointer;
-      margin-bottom: 5px;
-      transition: background-color 0.3s;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #555;
-    }
-
-    .folder {
-      font-weight: bold;
-      padding: 10px;
-      border-radius: 5px;
-    }
-
     .content {
       flex-grow: 1;
       position: relative;
@@ -77,62 +44,85 @@
       transform: translate(-50%, -50%);
       font-size: 18px;
       color: #555;
+      display: flex;
     }
 
-    .file, .sub-navbar div:hover {
-      background-color: #444;
-      border: 1px solid #555;
-    }
 
-    .subfolder-navbar {
-      display: none;
-      position: relative;
-      top: 0;
-      left: 0;
-      width: 200px;
-      height: 100%;
-      background-color: #333;
-      color: white;
-      overflow-y: auto;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-      transition: left 0.3s;
-      padding: 10px;
-    }
+    .navbar {
+  width: 200px;
+  height: 100%;
+  background-color: #333;
+  color: white;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  transition: width 0.3s;
+  border-right: 1px solid #555;
+  padding: 10px;
+}
 
-    .subfolder-navbar .box {
-      margin-bottom: 5px;
-      transition: all 0.3s;
-      background-color: #444;
-      border-radius: 5px;
-      border: 1px solid #555;
-      padding: 10px;
-    }
+.navbar:hover,
+.sub-navbar:hover {
+  width: 250px;
+}
 
-    .subfolder-navbar .box-heading {
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
+.navbar:hover,
+.sub-navbar {
+  padding-left: 15px;
+}
 
-    .file:hover {
-      background-color: #555;
-    }
+.navbar:hover .content {
+  margin-left: 250px;
+}
 
-    .navbar:hover, .sub-navbar:hover {
-      width: 250px;
-    }
+#navbar .box {
+  background-color: #555;
+  border: 1px solid #666;
+  white-space: nowrap;
+  font-weight: normal;
+  padding: 10px;
+  border-radius: 5px;
+  display: block;
+  flex-wrap: wrap;
+}
 
-    .navbar:hover .sub-navbar {
-      padding-left: 15px;
-    }
+#navbar .box:hover {
+  background-color: #666;
+}
 
-    .navbar:hover .content {
-      margin-left: 250px;
-    }
+#navbar .box a,
+#navbar .box .action {
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center; 
+  margin-right: 10px;
+  padding: 8px;
+  transition: background-color 0.3s;
+}
 
-    .navbar .box{
-      padding: 10px;
-      border-radius: 5px;
-    }
+#navbar p {
+  margin: 0;
+  cursor: pointer;
+}
+
+#navbar .action {
+  display: inline-block;
+  vertical-align: top;
+  
+}
+
+#navbar .action form {
+  margin-bottom: 0.5em;
+  display: inline-block;
+  
+}
+
+#navbar .reject {
+  
+  display: inline-block;
+}
+
 
     .dashboard_buttons {
       align-self: flex-end;
@@ -158,6 +148,8 @@
       background-color: #777;
     }
 
+    
+
   </style>
 </head>
 <body>
@@ -169,134 +161,55 @@
 
 <div class="container">
   <div id="navbar" class="navbar">
+    {% for document in pending_documents %}
     <div class="box">
-      <div class="box-heading"></div>
-      <!-- Files will be dynamically added here -->
+      
+        <a href="{{ url_for('open_file1', file_name= document.pdf_path) }}" target="fileViewer">
+          <p onclick="displayFile()">{{ document.title }}</p>
+        </a>
+        
+        <div class="action">
+          <form method="post" action="{{ url_for('approve_document', document_id=document.id, action='approve') }}">
+            <button type="submit" class="approve">Approve</button>
+          </form>
+          
+          <form id="rejectForm" method="post" >
+            <button type="button" class="reject" id="rejectButton">Reject</button>
+            <textarea name="rejection_reason" placeholder="Enter rejection reason" id="rejectionReason" style="display: none;"></textarea>
+            <button type="submit" formaction="{{ url_for('approve_document', document_id=document.id, action='reject') }}" style="display: none;" id="submitReject">Submit</button>
+          </form>
+        </div>
+      
     </div>
-    <div class="box">
-      <div class="box-heading">Folders</div>
-      <!-- Folders will be dynamically added here -->
-    </div>
-  </div>
-  <div id="subfolderNavbar" class="subfolder-navbar">
-    <div class="box">
-      <div class="box-heading">Subfolder Files</div>
-      <!-- Subfolder files will be dynamically added here -->
-    </div>
+    {% endfor %}
   </div>
   <div id="content" class="content">
+    <div class="preview-message" id="preview-message">Select a file to preview</div>
     <div class="iframe-container">
-      <iframe id="fileViewer" src="" frameborder="0"></iframe>
-      <div class="preview-message">Select a file to preview</div>
+      <iframe id="fileViewer" name="fileViewer" src="" frameborder="0"></iframe>
     </div>
     
   </div>    
 </div>
 
 <script>
-
-document.addEventListener('DOMContentLoaded', function () {
-    const navbar = document.getElementById('navbar');
-    const fileViewer = document.getElementById('fileViewer');
-    const previewMessage = document.querySelector('.preview-message');
-    const subfolderNavbar = document.getElementById('subfolderNavbar');
-
-    let selectedFile = null;
-
-    function createFileElement(file) {
-      const fileElement = document.createElement('div');
-      fileElement.textContent = file.name;
-      fileElement.classList.add('file', 'box');
-      if (file.isFolder) {
-        fileElement.classList.add('folder');
-        fileElement.addEventListener('click', () => {
-          fetch(`/files/${file.path}`)
-            .then(response => response.json())
-            .then(subfolderContent => {
-              selectedFile = null; // Clear the selected file
-              renderSubfolder(subfolderContent, file);
-            })
-            .catch(error => {
-              console.error('Error fetching subfolder content:', error);
-            });
-        });
-      } else {
-        fileElement.addEventListener('click', () => {
-          // Set the iframe source to display file content
-          renderFile(file);
-        });
-      }
-
-      return fileElement;
-    }
-
-    function renderFile(file) {
-      // Set the iframe source to display the file
-      if (file.name.endsWith('.pdf') || file.name.endsWith('.txt')) {
-        renderPDF(file);
-      } 
-      else {
-        // Add more conditions for other file types if needed
-        console.log('Unsupported file type');
-      }
-
-      // Update the selected file
-      selectedFile = file;
-    }
-
-    function renderPDF(file) {
-        // Set the iframe source to display the PDF file using url_for
-        filePath = file.path;
-        const pathWithoutDriveLetter = filePath.substring(2);
-        console.log(pathWithoutDriveLetter);
-        const correctedPath = pathWithoutDriveLetter.replace(/\\/g, '/');
-        const pdfUrl = `/filesold/${encodeURIComponent(correctedPath)}`;
-        fileViewer.src = pdfUrl;
-        previewMessage.style.display = 'none';
-
-        // Do not hide the subfolder navbar when a file is selected
-
-        // Update the selected file
-        selectedFile = file;
-    }
-
-    function renderSubfolder(subfolderContent, selectedFolder) {
-      subfolderNavbar.innerHTML = '';
-
-      // Display the subfolder navbar to the right
-      subfolderNavbar.style.display = 'block';
-
-      // Show "Select a file to preview" message when a subfolder is selected
-      fileViewer.src = '';
-      previewMessage.style.display = 'block';
-
-      subfolderContent.forEach(subfile => {
-        const subfileElement = createFileElement(subfile);
-        subfolderNavbar.appendChild(subfileElement);
-      });
-
-      // Update the selected file when a subfolder is selected
-      selectedFile = selectedFolder;
-    }
-
-    // Fetch file names from the root folder
-    fetch('/files')
-      .then(response => response.json())
-      .then(data => {
-        const filesBox = document.querySelector('.box:nth-child(1)');
-        const foldersBox = document.querySelector('.box:nth-child(2)');
-
-        data.forEach(file => {
-          const fileElement = createFileElement(file);
-
-          // Append files to the "Files" box and folders to the "Folders" box
-          file.isFolder ? foldersBox.appendChild(fileElement) : filesBox.appendChild(fileElement);
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching root folder content:', error);
-      });
+  
+  document.getElementById('rejectButton').addEventListener('click', function () {
+    document.getElementById('rejectionReason').style.display = 'block';
+    document.getElementById('submitReject').style.display = 'block';
   });
+
+  // If you want to submit the form when clicking the "Submit" button
+  document.getElementById('submitReject').addEventListener('click', function () {
+    document.getElementById('rejectForm').submit();
+  });
+
+  var previewMessage = document.getElementsById('preview-message');
+  previewMessage.style.display = 'none';
+
+  function displayFile() {
+    previewMessage.style.display = 'none';
+  }
 
   function redirectToPage(url) {
     window.location.href = url;

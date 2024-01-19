@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documents</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .navbar, .subfolder-navbar {
+      width: 200px;
+      height: 100%;
+      background-color: #333;
+      color: white;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      transition: width 0.3s;
+      border-right: 1px solid #555;
+      padding: 10px;
+    }
+
+    .sub-navbar {
+      display: none;
+      transition: padding-left 0.3s;
+    }
+
+    .sub-navbar div {
+      cursor: pointer;
+      margin-bottom: 5px;
+      transition: background-color 0.3s;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #555;
+    }
+
+    .folder {
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .content {
+      flex-grow: 1;
+      position: relative;
+      display: flex;
+      transition: margin-left 0.3s;
+    }
+
+    .iframe-container {
+      flex-grow: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .preview-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: #555;
+    }
+
+    .file, .sub-navbar div:hover {
+      background-color: #444;
+      border: 1px solid #555;
+    }
+
+    .subfolder-navbar {
+      display: none;
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 100%;
+      background-color: #333;
+      color: white;
+      overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+      transition: left 0.3s;
+      padding: 10px;
+    }
+
+    .subfolder-navbar .box {
+      margin-bottom: 5px;
+      transition: all 0.3s;
+      background-color: #444;
+      border-radius: 5px;
+      border: 1px solid #555;
+      padding: 10px;
+    }
+
+    .subfolder-navbar .box-heading {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .file:hover {
+      background-color: #555;
+    }
+
+    .navbar:hover, .sub-navbar:hover {
+      width: 250px;
+    }
+
+    .navbar:hover .sub-navbar {
+      padding-left: 15px;
+    }
+
+    .navbar:hover .content {
+      margin-left: 250px;
+    }
+
+    .navbar .box{
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .dashboard_buttons {
+      align-self: flex-end;
+      background: rgba(220, 220, 220, 0.813);
+      color: #fff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .dashboard_buttons .button {
+      cursor: pointer;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #555;
+      color: #fff;
+      transition: background-color 0.3s;
+    }
+
+    .dashboard_buttons .button:hover {
+      background-color: #777;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="dashboard_buttons">
+  <button class="button goback" onclick="redirectToPage('/dashboard')">Main Page</button>
+  <button class="button logout" onclick="handleButtonClick('Logout')">Logout</button>
+</div>    
+
+<div class="container">
+  <div id="navbar" class="navbar">
+    <div class="box">
+      <div class="box-heading"></div>
+      <!-- Files will be dynamically added here -->
+    </div>
+    <div class="box">
+      <div class="box-heading">Folders</div>
+      <!-- Folders will be dynamically added here -->
+    </div>
+  </div>
+  <div id="subfolderNavbar" class="subfolder-navbar">
+    <div class="box">
+      <div class="box-heading">Subfolder Files</div>
+      <!-- Subfolder files will be dynamically added here -->
+    </div>
+  </div>
+  <div id="content" class="content">
+    <div class="iframe-container">
+      <iframe id="fileViewer" src="" frameborder="0"></iframe>
+      <div class="preview-message">Select a file to preview</div>
+    </div>
+    
+  </div>    
+</div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    const navbar = document.getElementById('navbar');
+    const fileViewer = document.getElementById('fileViewer');
+    const previewMessage = document.querySelector('.preview-message');
+    const subfolderNavbar = document.getElementById('subfolderNavbar');
+
+    let selectedFile = null;
+
+    function createFileElement(file) {
+      const fileElement = document.createElement('div');
+      fileElement.textContent = file.name;
+      fileElement.classList.add('file', 'box');
+      if (file.isFolder) {
+        fileElement.classList.add('folder');
+        fileElement.addEventListener('click', () => {
+          fetch(`/files/${file.path}`)
+            .then(response => response.json())
+            .then(subfolderContent => {
+              selectedFile = null; // Clear the selected file
+              renderSubfolder(subfolderContent, file);
+            })
+            .catch(error => {
+              console.error('Error fetching subfolder content:', error);
+            });
+        });
+      } else {
+        fileElement.addEventListener('click', () => {
+          // Set the iframe source to display file content
+          renderFile(file);
+        });
+      }
+
+      return fileElement;
+    }
+
+    function renderFile(file) {
+      // Set the iframe source to display the file
+      if (file.name.endsWith('.pdf') || file.name.endsWith('.txt')) {
+        renderPDF(file);
+      } 
+      else {
+        // Add more conditions for other file types if needed
+        console.log('Unsupported file type');
+      }
+
+      // Update the selected file
+      selectedFile = file;
+    }
+
+    function renderPDF(file) {
+        // Set the iframe source to display the PDF file using url_for
+        filePath = file.path;
+        const pathWithoutDriveLetter = filePath.substring(2);
+        console.log(pathWithoutDriveLetter);
+        const correctedPath = pathWithoutDriveLetter.replace(/\\/g, '/');
+        const pdfUrl = `/filesold/${encodeURIComponent(correctedPath)}`;
+        fileViewer.src = pdfUrl;
+        previewMessage.style.display = 'none';
+
+        // Do not hide the subfolder navbar when a file is selected
+
+        // Update the selected file
+        selectedFile = file;
+    }
+
+    function renderSubfolder(subfolderContent, selectedFolder) {
+      subfolderNavbar.innerHTML = '';
+
+      // Display the subfolder navbar to the right
+      subfolderNavbar.style.display = 'block';
+
+      // Show "Select a file to preview" message when a subfolder is selected
+      fileViewer.src = '';
+      previewMessage.style.display = 'block';
+
+      subfolderContent.forEach(subfile => {
+        const subfileElement = createFileElement(subfile);
+        subfolderNavbar.appendChild(subfileElement);
+      });
+
+      // Update the selected file when a subfolder is selected
+      selectedFile = selectedFolder;
+    }
+
+    // Fetch file names from the root folder
+    fetch('/files')
+      .then(response => response.json())
+      .then(data => {
+        const filesBox = document.querySelector('.box:nth-child(1)');
+        const foldersBox = document.querySelector('.box:nth-child(2)');
+
+        data.forEach(file => {
+          const fileElement = createFileElement(file);
+
+          // Append files to the "Files" box and folders to the "Folders" box
+          file.isFolder ? foldersBox.appendChild(fileElement) : filesBox.appendChild(fileElement);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching root folder content:', error);
+      });
+  });
+
+  function redirectToPage(url) {
+    window.location.href = url;
+  }
+
+  var username = '{{ session["username"] }}';
+  console.log('Username:', username);
+
+  function handleButtonClick(message) {
+    if (message == "Logout") {
+      alert(message);
+      window.location.href = '/logout';
+    }
+  }
+
+</script>
+</body>
+</html>

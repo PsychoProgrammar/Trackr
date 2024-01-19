@@ -1,3 +1,0 @@
-PIPELINE:
-A pipeline in DevOps aims to achieve continuous integration and continuous delivery (CI/CD), 
-which means that the code is integrated frequently, tested continuously, and delivered reliably.

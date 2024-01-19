@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 import glob
-from docx import Document
+# from docx import Document
 from PyPDF2 import PdfReader
 from PyPDF2 import PdfFileReader
 import fitz
@@ -25,8 +25,13 @@ from flask_wtf.file import FileField, FileAllowed
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.pdfgen import canvas
 from pdfme import PDF
-
-
+import boto3
+from tqdm import tqdm
+import time
+import math
+from joblib import Parallel, delayed
+from flask_profiler import Profiler
+import cProfile
 
 
 # Flask app configuration
@@ -35,11 +40,17 @@ app.secret_key = 'your_secret_key'  # Change this to a secure secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost:8080/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config.from_pyfile('config.py')
 
 db = SQLAlchemy(app)
 
-
-
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
+    aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'],
+)
+bucket = 'first-challenge-team-5-pfdocs'
+admin_bucket = 'first-challenge-team-5-admin-approval-bucket'
 
 
 class Document(db.Model):
@@ -49,6 +60,7 @@ class Document(db.Model):
     description = db.Column(db.String(255), nullable=True)
     pdf_path = db.Column(db.String(255), nullable=False)
     approval_status = db.Column(db.String(255), nullable=False)
+    rejection_reason = db.Column(db.Text, nullable=True)
 
 class User(db.Model):
     __tablename__ = 'users1'
@@ -81,6 +93,8 @@ class AnswerForm(FlaskForm):
     content = TextAreaField('Your Answer', validators=[InputRequired()])
     submit = SubmitField('Post Answer')
     edited = BooleanField('edited', default=False)
+
+
 
 # Route for the login page
 @app.route('/login', methods=['GET', 'POST'])
@@ -191,7 +205,7 @@ def add_post_doc():
                 file.write(f"{content}")
 
             # Save document information in the database
-            new_document = Document(title=doc_title, type=doc_type, description=brief_description, pdf_path=file_path, approval_status='Pending')
+            new_document = Document(title=doc_title, type=doc_type, description=brief_description, pdf_path=file_path, approval_status='Pending', rejection_reason = None)
             db.session.add(new_document)
             db.session.commit()
 
@@ -262,7 +276,7 @@ def read_text(file_path):
 # Function to search documents by name and content
 def search_documents(query):
     results = []
-    allowed_extensions = ['.pdf', '.txt']
+    allowed_extensions = ['.pdf']
 
     for root, dirs, files in os.walk('C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'):
         for file in files:
@@ -304,21 +318,141 @@ def search():
     return jsonify({'results': results})
 
 @app.route('/admin_dashboard', methods=['POST','GET'])
-def admin_approval():
-    directory = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
-    folder_content = get_folder_content(directory)
-    if request.method == 'POST':
-        query = request.form.get('search_query')
-        results = search_documents(query)
-        return render_template('admin_dashboard1.html', folder_content=folder_content, get_folder_content=get_folder_content, query=query, results=results)
-    return render_template('admin_dashboard1.html', folder_content=folder_content, get_folder_content=get_folder_content, query='', results=[])
+def admin_dashboard():
+    # directory = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
+    # folder_content = get_folder_content(directory)
+    # if request.method == 'POST':
+        # query = request.form.get('search_query')
+        # results = search_documents(query)
+    pending_document = Document.query.filter_by(approval_status='Pending').all()
+        # return render_template('admin_dashboard1.html',pending_documents=pending_document) # folder_content=folder_content, get_folder_content=get_folder_content, query=query, results=results)
+    return render_template('admin_dashboard1.html',pending_documents=pending_document)  #folder_content=folder_content, get_folder_content=get_folder_content, query='', results=[])
 
-@app.route('/summary', methods=['POST','GET'])
-def create_summary():
-    return render_template('create_summary.html')
+@app.route('/approve_document/<int:document_id>/<string:action>', methods=['GET', 'POST'])
+def approve_document(document_id, action):
+    document = Document.query.get_or_404(document_id)
+
+    if action == 'approve':
+        document.approval_status = 'Approved'
+        db.session.commit()
+        s3.copy_object(
+            Bucket=bucket,
+            CopySource={'Bucket': admin_bucket, 'Key': document.pdf_path},
+            Key=document.pdf_path
+        )
+        s3.delete_object(
+            Bucket=admin_bucket,
+            Key=document.pdf_path
+        )
+
+        #flash('Document approved successfully.', 'success')
+    elif action == 'reject':
+        # Delete the document file if rejected
+        document.approval_status = 'Rejected'
+        rejection_reason = request.form.get('rejection_reason')
+        document.rejection_reason = rejection_reason
+        db.session.commit()
+        s3.delete_object(
+            Bucket=admin_bucket,
+            Key=document.pdf_path
+        )
+        #flash('Document rejected.', 'warning')
+    return redirect(url_for('admin_dashboard'))# folder_content=folder_content, get_folder_content=get_folder_content)) #, query=query, results=results))
+
+base_folder_path = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
+
+def get_file_info(file_path):
+    return {
+        'name': os.path.basename(file_path),
+        'path': file_path,
+        'isFolder': os.path.isdir(file_path)
+    }
+
+def get_files_in_folder(folder_path):
+    files = []
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        files.append(get_file_info(file_path))
+    return files
+
+@app.route('/files', methods=['GET'])
+def get_root_files():
+    try:
+        files = get_files_in_folder(base_folder_path)
+        return jsonify(files)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/files/<path:subpath>', methods=['GET'])
+def get_subfolder_content(subpath):
+    try:
+        subfolder_path = os.path.join(base_folder_path, subpath)
+        files = get_files_in_folder(subfolder_path)
+        return jsonify(files)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/file/<path:file_path>', methods=['GET'])
+def get_file_content(file_path):
+    try:
+        if os.path.isfile(file_path):
+            
+            parts = file_path.split('/')
+            undesired_parts = [0,1,2,3,4]
+            remaining_parts = [part for index, part in enumerate(parts) if index not in undesired_parts]
+            result = '/'.join(remaining_parts)
+            print(result)
+            with open(result, 'rb') as file:
+                content = file.read()
+            return Response(content, content_type='application/pdf')
+        else:
+            return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+import PyPDF2
+import io
+import transformers
+import nltk
+import re
+
+class Summarizer:
+    def __init__(self):
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained("sshleifer/distilbart-cnn-12-6")
+        self.model = transformers.AutoModelForSeq2SeqLM.from_pretrained("sshleifer/distilbart-cnn-12-6")
+ 
+    def summarize(self, text):
+        # Tokenize the text
+        input_ids = self.tokenizer(text, return_tensors="pt").input_ids
+ 
+        # Generate the summary
+        output = self.model.generate(input_ids)
+ 
+        # Decode the summary
+        summary = self.tokenizer.batch_decode(output, skip_special_tokens=True)
+ 
+        # Return the summary
+        return summary[0]
+ 
+# Initialize the summarizer
+summarizer = Summarizer()
+
+@app.route('/summary/<path:file_name>', methods=['POST','GET'])
+def create_summary(file_name):
+    response1 = s3.get_object(Bucket=bucket, Key=file_name)
+    with response1['Body'] as binary_file:
+        content = binary_file.read()
+        # print(content)
+        pdf_file = PyPDF2.PdfReader(io.BytesIO(content))
+        for page_num in range(len(pdf_file.pages)):
+            page = pdf_file.pages[page_num]
+            text = page.extract_text()
+            summary = summarizer.summarize(text)
+    return render_template('create_summary.html', summary = summary)
 
 @app.route('/query', methods=['POST','GET'])
-def query_page():
+def query_page(file_name):
+    
     return render_template('query_page.html')
 
 @app.route('/publish', methods=['POST','GET'])
@@ -329,55 +463,40 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+
 @app.route('/add_post_file', methods=['POST', 'GET'])
 def add_post_file():
+    
     if request.method == 'POST':
         option = request.form.get('option')
         doc_title = request.form['doc_title']
         brief_description = request.form['brief_description']
         doc_type = request.form['type']
 
-        
-
         if option == 'upload':
-                uploaded_file = request.files['file']
-                # Create a directory to store uploaded files if not exists
-                if doc_type == 'Learning':
-                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Learning')
+            uploaded_file = request.files['file']
 
-                elif doc_type == 'Training':
-                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Training')
+            # Create a directory to store uploaded files if not exists
+            upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], doc_type)
+            os.makedirs(upload_dir, exist_ok=True)
 
-                elif doc_type == 'KT':
-                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'KT')
+            # Save the uploaded file to S3
+            if uploaded_file:
+                file_key1 = os.path.join(doc_type, f"{doc_title}.pdf")
+                parts = re.split(r'[\\\/]', file_key1)
+                file_key = '/'.join(parts)
+                s3.upload_fileobj(uploaded_file, admin_bucket, file_key, ExtraArgs={'ContentType': 'application/pdf'})
 
-                elif doc_type == 'ProjectSpecific':
-                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'ProjectSpecific')
-
-                elif doc_type == 'UserSpecific':
-                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'UserSpecific')
-
-                else:
-                    upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Others')
-                
-                os.makedirs(upload_dir, exist_ok=True)
-                # Save the uploaded file
-                if uploaded_file:
-                    file_path = os.path.join(upload_dir, uploaded_file.filename)
-                    uploaded_file.save(file_path)
-                    # Save document information in the database
-                    new_document = Document(title=doc_title, description=brief_description, pdf_path=file_path, type=doc_type, approval_status='Pending')
-                    db.session.add(new_document)
-                    db.session.commit()
-                    return redirect(url_for('add_post_file'))
-                
-                if 'file' not in request.files:
-                    return jsonify({'error': 'No file part'})
-
-                if uploaded_file.filename == '':
-                    return jsonify({'error': 'No selected file'})
+                # Save document information in the database
+                new_document = Document(title=doc_title, description=brief_description, pdf_path=file_key, type=doc_type, approval_status='Pending', rejection_reason = None)
+                db.session.add(new_document)
+                db.session.commit()
 
     return render_template('add_post_file.html')
+
+
+
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -435,124 +554,41 @@ def index(username):
 def add_post_post():
     return render_template('add_post_post.html')
 
+
+
+#-------------------------------------------------------------View all----------------------------------------------------------------#
+
+@app.route('/open_file/<path:file_name>')
+def open_file(file_name):
+    domain_url = "https://d10mhv7mhmexpx.cloudfront.net/"
+    view_url = domain_url+file_name
+    return redirect(view_url)
+
+@app.route('/open_file1/<path:file_name>')
+def open_file1(file_name):
+    domain_url = "https://d32kergzsb371w.cloudfront.net/"
+    view_url = domain_url+file_name
+    return redirect(view_url)
+
+def list_objects(prefix=''):
+    response = s3.list_objects(Bucket=bucket, Prefix=prefix)
+    objects = response.get('Contents', [])
+    return objects
+
+@app.route('/folder/<path:folder_name>')
+def folder(folder_name):
+    prefix = folder_name
+    objects1 = list_objects()
+    objects = list_objects(prefix)
+    return render_template('display_files.html', objects1=objects1, objects=objects)
+
 @app.route('/display_files', methods=['POST','GET'])
 def display_files():
-    return render_template("display_files.html")
+    objects = list_objects()
+    return render_template("display_files.html", objects1=objects, objects=objects)
 
-base_folder_path = 'C:/Users/7000035069/Desktop/PF_SOCIALS/uploads'
+#-------------------------------------------------------------View all----------------------------------------------------------------#
 
-def get_file_info(file_path):
-    return {
-        'name': os.path.basename(file_path),
-        'path': file_path,
-        'isFolder': os.path.isdir(file_path)
-    }
-
-def get_files_in_folder(folder_path):
-    files = []
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-        files.append(get_file_info(file_path))
-    return files
-
-@app.route('/files', methods=['GET'])
-def get_root_files():
-    try:
-        files = get_files_in_folder(base_folder_path)
-        return jsonify(files)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/files/<path:subpath>', methods=['GET'])
-def get_subfolder_content(subpath):
-    try:
-        subfolder_path = os.path.join(base_folder_path, subpath)
-        files = get_files_in_folder(subfolder_path)
-        return jsonify(files)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/file/<path:file_path>', methods=['GET'])
-def get_file_content(file_path):
-    try:
-        if os.path.isfile(file_path):
-            
-            parts = file_path.split('/')
-            undesired_parts = [0,1,2,3,4]
-            remaining_parts = [part for index, part in enumerate(parts) if index not in undesired_parts]
-            result = '/'.join(remaining_parts)
-            print(result)
-            with open(result, 'rb') as file:
-                content = file.read()
-            return Response(content, content_type='application/pdf')
-        else:
-            return jsonify({'error': 'File not found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-# @app.route('/file-link/<path:file_path>', methods=['GET'])
-# def get_file_link(file_path):
-#     try:
-#         if file_path.endswith('.pdf'):
-#             link = f'http://127.0.0.1:5000//{file_path}'
-#             return jsonify({'link': link})
-#         else:
-#             return jsonify({'error': 'Invalid file type'}), 400
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500
-
-# @app.route('/generate_pdf', methods=['POST'])
-# def generate_pdf():
-#     content = request.form['content']
-
-#     # Create a PDF document
-#     pdf_filename = 'output.pdf'
-#     with open(pdf_filename, 'wb') as f:
-#         c = canvas.Canvas(f)
-#         c.drawString(100, 750, content)  # Adjust the position as needed
-#         c.save()
-
-#     return send_file(pdf_filename, as_attachment=True)
-    
-
-
-from fpdf import FPDF
-# from html2pdf import HTML2PDF
-
-class PDF(FPDF):
-    def header(self):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'PDF Generator', 0, 1, 'C')
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, 'Page %s' % self.page_no(), 0, 0, 'C')
-
-
-@app.route('/generate_pdf', methods=['POST'])
-def generate_pdf():
-    content = request.form['content']
-
-    # Create a PDF document
-    pdf = PDF()
-    pdf.add_page()
-
-    # Set font and size
-    pdf.set_font("Arial", size=12)
-
-    # Parse HTML content
-    soup = BeautifulSoup(content, 'html.parser')
-    formatted_text = soup.get_text("\n", strip=True)
-
-    # Add content to the PDF
-    pdf.multi_cell(0, 10, formatted_text)
-
-    # Save the PDF to a file
-    pdf_filename = 'output.pdf'
-    pdf.output(pdf_filename)
-
-    return send_file(pdf_filename, as_attachment=True)
 
 if __name__ == '__main__':
     with app.app_context():
